@@ -15,6 +15,23 @@ const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const SWEAR_WORDS = ["nigger", "cunt", "fuck", "motherfucker", "bitch", "fucking,", "fvck", "shit"];
 
+client.on("guildMemberAdd", async (member) => {
+    const roleName = "Member"; // Change this to the exact role name
+    const role = member.guild.roles.cache.find(r => r.name === roleName);
+
+    if (role) {
+        try {
+            await member.roles.add(role);
+            console.log(`✅ Assigned "${roleName}" role to ${member.user.tag}`);
+        } catch (error) {
+            console.error(`❌ Failed to assign role to ${member.user.tag}:`, error);
+        }
+    } else {
+        console.error(`❌ Role "${roleName}" not found in guild ${member.guild.name}`);
+    }
+});
+
+
 // 8ball responses
 const MAGIC_8BALL_RESPONSES = [
     "It is certain", "Without a doubt", "You may rely on it", "Yes definitely",
