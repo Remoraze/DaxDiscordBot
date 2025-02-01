@@ -60,11 +60,11 @@ const ROAST_RESPONSES = [
 // Register commands
 const commands = [
     new SlashCommandBuilder()
-        .setName("whosaretard")
-        .setDescription("Randomly picks a member and calls them an Retard."),
-    new SlashCommandBuilder()
         .setName("help")
         .setDescription("Get information about Dax."),
+    new SlashCommandBuilder()
+        .setName("whosaretard")
+        .setDescription("Randomly picks a member and calls them an Retard."),
     new SlashCommandBuilder()
         .setName("8ball")
         .setDescription("Ask the Magic 8 Ball a question")
