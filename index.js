@@ -16,7 +16,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const SWEAR_WORDS = ["nigger", "cunt", "fuck", "motherfucker", "bitch", "fucking,", "fvck", "shit"];
 
 client.on("guildMemberAdd", async (member) => {
-    const roleName = "Member"; // Change this to the exact role name
+    const roleName = "Member";
     const role = member.guild.roles.cache.find(r => r.name === roleName);
 
     if (role) {
@@ -31,8 +31,6 @@ client.on("guildMemberAdd", async (member) => {
     }
 });
 
-
-// 8ball responses
 const MAGIC_8BALL_RESPONSES = [
     "It is certain", "Without a doubt", "You may rely on it", "Yes definitely",
     "It is decidedly so", "As I see it, yes", "Most likely", "Yes",
@@ -42,7 +40,6 @@ const MAGIC_8BALL_RESPONSES = [
     "My sources say no", "Outlook not so good", "Very doubtful"
 ];
 
-// Roast responses
 const ROAST_RESPONSES = [
     "I'd roast you, but my mom said I'm not allowed to burn trash.",
     "You're like a cloud - when you disappear, it's a beautiful day.",
@@ -57,7 +54,6 @@ const ROAST_RESPONSES = [
     "You're not stupid; you just have bad luck thinking."
 ];
 
-// Register commands
 const commands = [
     new SlashCommandBuilder()
         .setName("help")
@@ -84,7 +80,20 @@ const commands = [
         .addUserOption(option =>
             option.setName("target")
                 .setDescription("The user to roast")
-                .setRequired(true))
+                .setRequired(true)),
+    new SlashCommandBuilder()
+        .setName("rps")
+        .setDescription("Play Rock Paper Scissors!")
+        .addStringOption(option =>
+            option.setName("choice")
+                .setDescription("Choose rock, paper, or scissors")
+                .setRequired(true)
+                .addChoices(
+                    { name: "Rock", value: "rock" },
+                    { name: "Paper", value: "paper" },
+                    { name: "Scissors", value: "scissors" }
+                )
+        )
 ].map(command => command.toJSON());
 
 client.once("ready", async () => {
@@ -102,69 +111,25 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
 
-    if (interaction.commandName === "whosaretard") {
-        const members = await interaction.guild.members.fetch();
-        const randomMember = members.random();
+    if (interaction.commandName === "rps") {
+        const choices = ["rock", "paper", "scissors"];
+        const userChoice = interaction.options.getString("choice");
+        const botChoice = choices[Math.floor(Math.random() * choices.length)];
 
-        if (!randomMember) {
-            await interaction.reply("Could not find a random member.");
-            return;
-        }
-
-        await interaction.reply(`${randomMember} is an Retard!`);
-    } else if (interaction.commandName === "help") {
-        await interaction.reply(
-            "Hello! You can use:\n" +
-            "- /whoisaretard: Pick a random retard\n" +
-            "- /8ball: Ask the magic 8 ball a question\n" +
-            "- /coinflip: Flip a coin\n" +
-            "- /yesno: Get a yes/no answer\n" +
-            "- /roast: Roast someone\n" +
-            "- /help: Show this message"
-        );
-    } else if (interaction.commandName === "8ball") {
-        const question = interaction.options.getString("question");
-        const response = MAGIC_8BALL_RESPONSES[Math.floor(Math.random() * MAGIC_8BALL_RESPONSES.length)];
-        await interaction.reply(`Question: ${question}\n🎱 ${response}`);
-    } else if (interaction.commandName === "coinflip") {
-        const result = Math.random() < 0.5 ? "Heads" : "Tails";
-        await interaction.reply(`🪙 The coin landed on: **${result}**!`);
-    } else if (interaction.commandName === "yesno") {
-        const random = Math.random() * 100;
-        let response;
-        if (random < 46) {
-            response = "Yes";
-        } else if (random < 92) {
-            response = "No";
+        let result;
+        if (userChoice === botChoice) {
+            result = "It's a tie!";
+        } else if (
+            (userChoice === "rock" && botChoice === "scissors") ||
+            (userChoice === "paper" && botChoice === "rock") ||
+            (userChoice === "scissors" && botChoice === "paper")
+        ) {
+            result = "You win! 🎉";
         } else {
-            response = "Maybe";
+            result = "You lose! 😢";
         }
-        await interaction.reply(`🤔 **${response}**`);
-    } else if (interaction.commandName === "roast") {
-        const target = interaction.options.getUser("target");
-        const roast = ROAST_RESPONSES[Math.floor(Math.random() * ROAST_RESPONSES.length)];
-        await interaction.reply(`Hey ${target}... ${roast} 🔥`);
-    }
-});
 
-client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
-    const messageContent = message.content.toLowerCase();
-
-    if (SWEAR_WORDS.some(word => messageContent.includes(word))) {
-        try {
-            await message.delete();
-            const member = message.guild.members.cache.get(message.author.id);
-
-            if (member && member.moderatable) {
-                await member.timeout(600 * 1000, "Swearing is not allowed!");
-                await message.channel.send(`${message.author} has been timed out for 10 minutes!`);
-            } else {
-                await message.channel.send(`I don't have permission to timeout ${message.author}.`);
-            }
-        } catch (error) {
-            console.error("Error timing out user:", error);
-        }
+        await interaction.reply(`You chose **${userChoice}**. I chose **${botChoice}**. ${result}`);
     }
 });
 
